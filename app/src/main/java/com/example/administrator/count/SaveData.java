@@ -31,16 +31,6 @@ public class SaveData extends AppCompatActivity {
         setContentView(R.layout.activity_save_data);
     }
 public void  recoveryDB(View v){
-   /* String DATABASE_PATH ="/sdcard/1/DBbackup";
-    File dir = new File(DATABASE_PATH);
-    String[] a=dir.list();
-    String  c="";
-
-    for(String b:a){
-        c+=b;}
-   // dialogAll.print(b);
-    dialogAll.print(c);*/
-
 
     final View view_custom;
     Context mContext;
@@ -71,8 +61,7 @@ public void  recoveryDB(View v){
 
         }
     });
-    //builder.setTitle("设置可选乘坐车辆");
-    alert = builder.create();
+        alert = builder.create();
     alert.show();
     Spinner sp=(Spinner) view_custom.findViewById(R.id.filespinner);
     ArrayList<String> list=new ArrayList<String>();
@@ -116,8 +105,9 @@ public void  recoveryDB(View v){
         String outputAll=outputPath+"/"+outputName;
         //com.example.administrator.shuidian
 
-
-        String databaseFilename = DATABASE_PATH + "/" + DATABASE_FILENAME;
+//获取数据库路径
+        String databaseFilename=getApplicationContext().getDatabasePath(DATABASE_FILENAME).getAbsolutePath();
+       // String databaseFilename = DATABASE_PATH + "/" + DATABASE_FILENAME;
         File dir = new File(databaseFilename);
 
 
@@ -161,9 +151,10 @@ public void  recoveryDB(View v){
         String outputAll=outputPath+"/"+outputName;
         //com.example.administrator.shuidian
 
-
-        String databaseFilename = DATABASE_PATH + "/" + DATABASE_FILENAME;
-        File dir = new File(DATABASE_PATH);
+//获取数据库路径
+        String databaseFilename=getApplicationContext().getDatabasePath(DATABASE_FILENAME).getAbsolutePath();
+        //String databaseFilename = DATABASE_PATH + "/" + DATABASE_FILENAME;
+        File dir = new File(databaseFilename);
         File newPath=new File(outputAll);
 
         if (dir.exists()&newPath.exists()) {

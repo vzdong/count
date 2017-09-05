@@ -16,6 +16,7 @@ public class SetPassWord extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_pass_word);
+
         PWDset pwd=new PWDset(this);
         EditText pwd3=(EditText)findViewById(R.id.pwd3);
         if(!(pwd.read("pwd").length()>0)){
