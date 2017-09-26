@@ -91,7 +91,10 @@ public class ContentActivity extends AppCompatActivity {
         //初始化数据库，创建表gu
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS gu (codenumber INTEGER PRIMARY KEY AUTOINCREMENT,code varchar(10),name varchar(10))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS deal (dealnumber INTEGER PRIMARY KEY AUTOINCREMENT,code varchar(10),name varchar(20),price REAL,number integer,time varchar(20))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS deal (dealnumber INTEGER PRIMARY KEY AUTOINCREMENT,code varchar(10),name varchar(20)," +
+                "price REAL,number integer,time varchar(20))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS log (dealnumber INTEGER PRIMARY KEY AUTOINCREMENT,code varchar(10),name varchar(20)," +
+                "price REAL,number integer,time varchar(20),flag varchar(10))");
         db.close();
 
         //初始化expandablelistview列表
@@ -216,8 +219,13 @@ public class ContentActivity extends AppCompatActivity {
     }
     //长按事件，删除子项条目
     public void delChild(String dealnumber){
+        String sql="insert into log(code,name,price,number,time,flag) " +
+                "select code,name,price,number,time,'卖出'  from deal  where dealnumber=?";
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
+        db.execSQL(sql,new String[]{dealnumber});
         db.execSQL("delete from deal where dealnumber=?",new String[]{dealnumber});
+        //String[] sql2 = {code1, name1, price1, number1, time,"买入"};
+        //db.execSQL("INSERT INTO log (code,name,price,number,time,flag) values(?,?,?,?,?,?)", sql2);
         db.close();
         refresh();
 
@@ -225,8 +233,11 @@ public class ContentActivity extends AppCompatActivity {
     //删除整组数据
     public void delGroup(String code){
 
+                String sql="insert into log(code,name,price,number,time,flag) " +
+                "select code,name,price,number,time,'卖出'  from deal  where code=?";
 
                     SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
+                    db.execSQL(sql,new String[]{code});
                     db.execSQL("delete from deal where code=?",new String[]{code});
                     db.close();
 
@@ -264,6 +275,10 @@ public class ContentActivity extends AppCompatActivity {
             case R.id.fei:
                 Intent intent3 = new Intent(this,feilv.class);
                 startActivity(intent3);
+                break;
+            case R.id.log:
+                Intent intent4=new Intent(this,LogActivity.class);
+                startActivity(intent4);
                 break;
 
 
@@ -356,10 +371,12 @@ public class ContentActivity extends AppCompatActivity {
             SimpleDateFormat df = new SimpleDateFormat("MM月dd日");
             String time = df.format(date);
             String[] sql = {code1, name1, price1, number1, time};
+            String[] sql2 = {code1, name1, price1, number1, time,"买入"};
 
            // if ( price1.length() > 0 & number1.length() > 0) {
                 SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
                 db.execSQL("INSERT INTO deal (code,name,price,number,time) values(?,?,?,?,?)", sql);
+                db.execSQL("INSERT INTO log (code,name,price,number,time,flag) values(?,?,?,?,?,?)", sql2);
                 db.close();
                 refresh();
                 dialogAll.print("成功增加！");
@@ -421,8 +438,10 @@ public class ContentActivity extends AppCompatActivity {
         ExpandableListAdapter mAdapter;
         ExpandableListView elistview=(ExpandableListView)findViewById(R.id.expandableListView);
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
-        Cursor groupCursor=db.rawQuery("select code as _id,name,sum(price*number)/sum(number) as avg_price,sum(number) as total from deal group by code,name",null);
-        mAdapter = new MyExpandableListAdapter(groupCursor, this, R.layout.listview_parent, R.layout.listview,fromParent, toParent, fromChild, toChild);
+        Cursor groupCursor=db.rawQuery("select code as _id,name,sum(price*number)/sum(number) as avg_price,sum(number) as total " +
+                "from deal group by code,name",null);
+        mAdapter = new MyExpandableListAdapter(groupCursor, this, R.layout.listview_parent, R.layout.listview,fromParent, toParent, fromChild,
+                toChild);
         elistview.setAdapter(mAdapter);
         db.close();
 
