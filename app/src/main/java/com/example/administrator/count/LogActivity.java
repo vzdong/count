@@ -129,7 +129,7 @@ public class LogActivity extends AppCompatActivity {
     //长按事件，删除子项条目
     public void delChild(String dealnumber){
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
-        db.execSQL("delete from deal where dealnumber=?",new String[]{dealnumber});
+        db.execSQL("delete from log where dealnumber=?",new String[]{dealnumber});
         db.close();
         refresh();
 
@@ -139,7 +139,7 @@ public class LogActivity extends AppCompatActivity {
 
 
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
-        db.execSQL("delete from deal where code=?",new String[]{code});
+        db.execSQL("delete from log where code=?",new String[]{code});
         db.close();
 
         refresh();
@@ -157,8 +157,8 @@ public class LogActivity extends AppCompatActivity {
         ExpandableListAdapter mAdapter;
         ExpandableListView elistview=(ExpandableListView)findViewById(R.id.expandableListView);
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
-        Cursor groupCursor=db.rawQuery("select code as _id,name,sum(price*number)/sum(number) as avg_price,sum(number) as total " +
-                "from log group by code,name",null);
+        Cursor groupCursor=db.rawQuery("select  code as _id,name,max(time)as time " +
+                "from log group by code order by time desc ",null);
         mAdapter = new LogActivity.MyExpandableListAdapter(groupCursor, this, R.layout.listview_parent, R.layout.listview,fromParent, toParent, fromChild,
                 toChild);
         elistview.setAdapter(mAdapter);
@@ -183,7 +183,7 @@ public class LogActivity extends AppCompatActivity {
             String code = groupCursor.getString(mGroupIdColumnIndex);
             SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
             Cursor childCursor = db.rawQuery("select code as _id,flag,price,number,time,dealnumber from log where code=? " +
-                    "order by price", new String[]{code});
+                    "order by time desc,flag,price", new String[]{code});
             //db.close();
             return childCursor;
 

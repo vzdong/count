@@ -10,4 +10,10 @@
     <color name="colorblue1">#EBEBEB</color>
     <color name="colorbutton">#fafafa</color>
     <color name="colorText">#4F94CD</color>
+
+    <color name="colorButton">#fafafa</color>
+    <color name="colorButtonText">#4F94CD</color>
+    <color name="colorButtonNoSelect">#BFBFBF</color>
+    <color name="colorButtonNoSelectText">#838B8B</color>
+    <color name="colorlistviewroomlook">#BFBFBF</color>
 </resources>

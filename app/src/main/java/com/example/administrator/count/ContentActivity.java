@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ContentActivity extends AppCompatActivity {
+    Context context=ContentActivity.this;
     private DialogForAll  dialogAll=new DialogForAll(this);
     // String time1=null;
     private long time1=0;
@@ -174,41 +175,19 @@ public class ContentActivity extends AppCompatActivity {
                     String  tv3s=tv3.getText().toString();
                     String  tv4s=tv4.getText().toString();
 
-                    Context context=ContentActivity.this;
-                    AlertDialog.Builder builder= new AlertDialog.Builder(context);
-                    builder.setTitle("警告");
-                    builder.setMessage("确定要删除该条记录吗？\n\n"+tv5s+"--"+tv2s+"--"+tv3s+"--"+tv4s);
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            delChild(dealnumber);
-
-                        }
-                    });
-                    builder.setNegativeButton("取消",null);
-                    builder.show();
+                    String str="确定要删除该条记录吗？\n\n"+tv5s+"--"+tv2s+"--"+tv3s+"--"+tv4s;
+                    dialogShow(str,dealnumber,0,tv3s);
                     return true;
                 }else{
                     TextView tv2=(TextView)view.findViewById(R.id.t2);
                     TextView tv1=(TextView)view.findViewById(R.id.t1);
+                    TextView tv3=(TextView)view.findViewById(R.id.t3);
                     final String  tv1s=tv1.getText().toString();
                     String  tv2s=tv2.getText().toString();
+                    String  tv3s=tv3.getText().toString();
 
-                    Context context=ContentActivity.this;
-                    AlertDialog.Builder builder= new AlertDialog.Builder(context);
-                    builder.setTitle("警告");
-                    builder.setMessage("确定要删除该组全部数据吗？\n\n"+tv1s+"--"+tv2s);
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                           delGroup(tv1s);
-
-                        }
-                    });
-                    builder.setNegativeButton("取消",null);
-                    builder.show();
+                    String str="确定要删除该组全部数据吗？\n\n"+tv1s+"--"+tv2s;
+                    dialogShow(str,tv1s,1,tv3s);
                     return false;
                 }
 
@@ -217,34 +196,76 @@ public class ContentActivity extends AppCompatActivity {
         listView.setOnItemLongClickListener(onItemLongClickListener);
 
     }
+
+
     //长按事件，删除子项条目
-    public void delChild(String dealnumber){
-        String sql="insert into log(code,name,price,number,time,flag) " +
-                "select code,name,price,number,time,'卖出'  from deal  where dealnumber=?";
-        SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
-        db.execSQL(sql,new String[]{dealnumber});
-        db.execSQL("delete from deal where dealnumber=?",new String[]{dealnumber});
-        //String[] sql2 = {code1, name1, price1, number1, time,"买入"};
-        //db.execSQL("INSERT INTO log (code,name,price,number,time,flag) values(?,?,?,?,?,?)", sql2);
-        db.close();
-        refresh();
+    public void delChild(String dealnumber,String price) {
+        if (price.length() > 0) {
+            String sql = "insert into log(code,name,price,number,time,flag) " +
+                    "select code,name,?,number,time,'卖出'  from deal  where dealnumber=?";
+            SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
+            db.execSQL(sql, new String[]{price, dealnumber});
+            db.execSQL("delete from deal where dealnumber=?", new String[]{dealnumber});
+            //String[] sql2 = {code1, name1, price1, number1, time,"买入"};
+            //db.execSQL("INSERT INTO log (code,name,price,number,time,flag) values(?,?,?,?,?,?)", sql2);
+            db.close();
+            refresh();
 
+        } else {
+                dialogAll.print("请输入价格!");
+        }
     }
-    //删除整组数据
-    public void delGroup(String code){
 
+    //删除整组数据
+    public void delGroup(String code,String price){
+        if (price.length() > 0) {
                 String sql="insert into log(code,name,price,number,time,flag) " +
-                "select code,name,price,number,time,'卖出'  from deal  where code=?";
+                "select code,name,?,number,time,'卖出'  from deal  where code=?";
 
                     SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
-                    db.execSQL(sql,new String[]{code});
+                    db.execSQL(sql,new String[]{price,code});
                     db.execSQL("delete from deal where code=?",new String[]{code});
                     db.close();
 
                     refresh();
 
+        } else {
+            dialogAll.print("请输入价格!");
+        }
 
+    }
+    public void dialogShow(String str, final String tv1s, final int i,String price){
+        final AlertDialog.Builder builder= new AlertDialog.Builder(context);
+        //加载自定义的那个View,同时设置下
+        final View view_custom;
+        final LayoutInflater inflater = ContentActivity.this.getLayoutInflater();
+        view_custom = inflater.inflate(R.layout.dialog_del_child_show, null,false);
+        builder.setView(view_custom);
 
+        builder.setTitle("警告");
+       // builder.setMessage(str);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                EditText priceShow=(EditText)view_custom.findViewById(R.id.price);
+                String price2=priceShow.getText().toString();
+                if(i==1) {
+                    delGroup(tv1s,price2);
+                }else{
+                    delChild(tv1s,price2);
+                }
+
+            }
+        });
+        builder.setNegativeButton("取消",null);
+        builder.show();
+
+        //设置对话框内容
+        TextView showStr= (TextView) view_custom.findViewById(R.id.stringShow);
+        showStr.setText(str);
+        EditText priceShow=(EditText)view_custom.findViewById(R.id.price);
+        priceShow.setText(price);
     }
 
     //重写onCreateOptionMenu(Menu menu)方法，当菜单第一次被加载时调用
@@ -341,18 +362,20 @@ public class ContentActivity extends AppCompatActivity {
 
     //增加交易数据到数据库
     public void add(View v) {
-       // EditText code = (EditText) findViewById(R.id.code);
-      //  EditText name = (EditText) findViewById(R.id.name);
+
         EditText price = (EditText) findViewById(R.id.price);
         EditText number = (EditText) findViewById(R.id.number);
-       // TextView dealnumber=(TextView)findViewById(R.id.dealnumber);
-         Spinner sp=(Spinner)findViewById(R.id.code);
 
+         Spinner sp=(Spinner)findViewById(R.id.code);
+        //检查输入是否完整
         if(sp.getSelectedItem()!=null&price.getText().length() > 0 & number.getText().length() > 0) {
             String spStr = sp.getSelectedItem().toString();
             String code1 = spStr.substring(0, spStr.indexOf("~"));
             String name1 = spStr.substring((spStr.indexOf("~") + 4), spStr.length());
             double temp = Double.parseDouble(price.getText().toString());
+            DecimalFormat format = new DecimalFormat("#.0000");
+            String price2 = format.format(temp);
+
             String lei=spStr.substring(0,1);
             //判断是股票还是基金
             if(lei.equals("0")|lei.equals("3")|lei.equals("6")) {
@@ -361,17 +384,16 @@ public class ContentActivity extends AppCompatActivity {
             }else {
                 temp=(temp * (1 + (jijinfei*2) * 0.0001));
             }
-            DecimalFormat format = new DecimalFormat("#.0000");
+
+            //DecimalFormat format = new DecimalFormat("#.0000");
             String price1 = format.format(temp);
-            //dialogAll(String.valueOf(temp));
-           // dialogAll(price1);
-            //String price1 = String.valueOf(temp);
+
             String number1 = number.getText().toString();
             Date date = new Date();
             SimpleDateFormat df = new SimpleDateFormat("MM月dd日");
             String time = df.format(date);
             String[] sql = {code1, name1, price1, number1, time};
-            String[] sql2 = {code1, name1, price1, number1, time,"买入"};
+            String[] sql2 = {code1, name1, price2, number1, time,"买入"};
 
            // if ( price1.length() > 0 & number1.length() > 0) {
                 SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
@@ -439,7 +461,7 @@ public class ContentActivity extends AppCompatActivity {
         ExpandableListView elistview=(ExpandableListView)findViewById(R.id.expandableListView);
         SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
         Cursor groupCursor=db.rawQuery("select code as _id,name,sum(price*number)/sum(number) as avg_price,sum(number) as total " +
-                "from deal group by code,name",null);
+                "from deal group by code,name ",null);
         mAdapter = new MyExpandableListAdapter(groupCursor, this, R.layout.listview_parent, R.layout.listview,fromParent, toParent, fromChild,
                 toChild);
         elistview.setAdapter(mAdapter);
