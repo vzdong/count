@@ -148,7 +148,7 @@ public class LogActivity extends AppCompatActivity {
 
     }
     //刷新列表
-    public void refresh(){
+    public void refresh2(){
 
         String[] fromParent=new String[]{"_id","name"};
         int[] toParent={R.id.t1,R.id.t2};
@@ -189,6 +189,52 @@ public class LogActivity extends AppCompatActivity {
 
 
         }
+    }
+    //刷新列表
+    public void refresh(){
+         ArrayList<Map<String,String>> gData=new ArrayList<Map<String,String>> ();
+         ArrayList<ArrayList<Map<String,String>>> iData=new  ArrayList<ArrayList<Map<String,String>>>();
+
+        SQLiteDatabase db = openOrCreateDatabase("count.db", Context.MODE_PRIVATE, null);
+        Cursor groupCursor=db.rawQuery("select  code,name,max(time)as time " +
+                "from log group by code order by time desc ",null);
+        while (groupCursor.moveToNext()) {
+            String code = groupCursor.getString(groupCursor.getColumnIndex("code"));
+            String name = groupCursor.getString(groupCursor.getColumnIndex("name"));
+
+            Map<String, String> showitem = new HashMap<String, String>();
+            showitem.put("code", code);
+            showitem.put("name", name);
+            gData.add(showitem);
+
+            Cursor childCursor = db.rawQuery("select code,flag,price,number,time,dealnumber from log where code=? " +
+                    "order by time desc,flag,price", new String[]{code});
+            ArrayList<Map<String,String>> childList=new  ArrayList<Map<String,String>>();
+           while (childCursor.moveToNext()){
+                String time = childCursor.getString(childCursor.getColumnIndex("time"));
+                String flag= childCursor.getString(childCursor.getColumnIndex("flag"));
+                String price= childCursor.getString(childCursor.getColumnIndex("price"));
+                String number= childCursor.getString(childCursor.getColumnIndex("number"));
+                String dealnumber= childCursor.getString(childCursor.getColumnIndex("dealnumber"));
+
+                Map<String, String> childitem = new HashMap<String, String>();
+                childitem.put("time",time);
+                childitem.put("flag",flag);
+                childitem.put("price",price);
+                childitem.put("number",number);
+                childitem.put("dealnumber",dealnumber);
+                childList.add(childitem);
+
+            }
+            iData.add(childList);
+        }
+        db.close();
+        MyBaseExpandableListAdapter mAdapter;
+        ExpandableListView elistview=(ExpandableListView)findViewById(R.id.expandableListView);
+        mAdapter = new MyBaseExpandableListAdapter(gData,iData,this);
+        elistview.setAdapter(mAdapter);
+
+
     }
     public void back(View v){
         Intent intent=new Intent(this,ContentActivity.class);

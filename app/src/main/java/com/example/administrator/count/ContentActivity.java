@@ -238,8 +238,9 @@ public class ContentActivity extends AppCompatActivity {
         final AlertDialog.Builder builder= new AlertDialog.Builder(context);
         //加载自定义的那个View,同时设置下
         final View view_custom;
-        final LayoutInflater inflater = ContentActivity.this.getLayoutInflater();
-        view_custom = inflater.inflate(R.layout.dialog_del_child_show, null,false);
+        //final LayoutInflater inflater = ContentActivity.this.getLayoutInflater();
+        view_custom = LayoutInflater.from(context).inflate(R.layout.dialog_del_child_show, null, false);
+       // view_custom = inflater.inflate(R.layout.dialog_del_child_show, null,false);
         builder.setView(view_custom);
 
         builder.setTitle("警告");
